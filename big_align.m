@@ -7,6 +7,8 @@ cost=zeros(MAX_ITER,1);
 %load data
 %movie_data=tdfread('ml-100k/u.item','bar');
 
+%try different noise level
+noise = [0.01, 0.10, 0.20, 0.30, 0.50, 1.0];
 %aggregate structural alike nodes
 i=1;
 while i<=size(A,1)-1
@@ -20,34 +22,19 @@ while i<=size(A,1)-1
     end
     i=i+1;
 end
-idx=randperm(size(A,1));
-P_star=eye(size(A,1),size(A,1));
-P_star=P_star(idx,:);
-B=A(idx,:);
-%NET INITialize
-degreeA=sum(A,2);
-[sortedDegA, sortedIdA]=sort(degreeA,'descend');
-degreeB=sum(B,2);
-[sortedDegB, sortedIdB]=sort(degreeB,'descend');
-P=zeros(size(A,1),size(A,1));
-for i = 1:size(A,1)
-    P(sortedIdB(i),sortedIdA(i))=1;
-end
-Q=eye(size(A,2),size(A,2));
-%alternating projected gradient descent
-k=2;
-[cost(2), df_dP]=f_aug(A,B,P,Q,lambda,mu);
-%cost(2)=computeCost(A,B,P,Q,lambda,mu);
-while abs(cost(k)-cost(k-1))/cost(k-1)>epsilon && k<MAX_ITER
-    if k>2 && cost(k)>cost(k-1)
-       costInc='cost increasing!!'
+for level=1:6
+    for iter=1:5
+        idx=randperm(size(A,1));
+        P_star=eye(size(A,1),size(A,1));
+        P_star=P_star(idx,:);
+        B=A(idx,:)+noise(level)*randi([0 1], size(A,1),size(A,2));
+        tic;
+        [permuted_A, final_cost] = GDwINIT(A,B,lambda,mu,MAX_ITER,epsilon);
+        time(level,iter)=toc;
+        rounded_A=(permuted_A>0.9);
+        rounded_B=(B>=1);
+        acc(level,iter)=sum(sum(rounded_A==rounded_B))/(size(A,1)*size(A,2));
     end
-    k=k+1;
-    eta_p=linesearch_P(A,B,P,Q,df_dP,lambda);
-    P=P-eta_p*df_dP;
-    P=valid_proj(P);
-    [cost(k), df_dP]=f_aug(A,B,P,Q,lambda,mu);
-    %[ costFrob(k) cost(k) ]=computeCost(A,B,P,Q,lambda,mu);
 end
 % or just compute P
 P=computeP(A,B,lambda,0.00001);
@@ -57,3 +44,4 @@ rank=zeros(6,1);
 for i =1:size(A,1)
    rank(degreeA(i))= rank(degreeA(i))+1;
 end
+

@@ -13,17 +13,20 @@ noise = [0.01, 0.10, 0.20, 0.30, 0.50, 1.0];
 i=1;
 while i<=size(A,1)-1
     j=i+1;
+    count=0;
     while j<=size(A,1)
        if A(i,:)==A(j,:)
            A(j,:)=[];
+           count=count+1;
        else
            j=j+1;
        end
     end
+    A(i,:)=count*A(i,:);
     i=i+1;
 end
 for level=1:6
-    for iter=1:5
+    for iter=1:3
         idx=randperm(size(A,1));
         P_star=eye(size(A,1),size(A,1));
         P_star=P_star(idx,:);
@@ -37,11 +40,11 @@ for level=1:6
     end
 end
 % or just compute P
-P=computeP(A,B,lambda,0.00001);
-err=sum(sum(abs(B-P*A)))/(size(A,1)*size(A,2))
+%P=computeP(A,B,lambda,0.00001);
+%err=sum(sum(abs(B-P*A)))/(size(A,1)*size(A,2))
 % scree plot
-rank=zeros(6,1);
-for i =1:size(A,1)
-   rank(degreeA(i))= rank(degreeA(i))+1;
-end
+%rank=zeros(6,1);
+%for i =1:size(A,1)
+%   rank(degreeA(i))= rank(degreeA(i))+1;
+%end
 

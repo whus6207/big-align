@@ -5,7 +5,7 @@ function [permuted_A, final_cost] = GDwINIT(A,B,lambda,mu,MAX_ITER,epsilon)
     [sortedDegA, sortedIdA]=sort(degreeA,'descend');
     degreeB=sum(B,2);
     [sortedDegB, sortedIdB]=sort(degreeB,'descend');
-    P=zeros(size(A,1),size(A,1));
+    P=zeros(size(B,1),size(A,1));
     for i = 1:size(A,1)
         P(sortedIdB(i),sortedIdA(i))=1;
     end
